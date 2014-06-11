@@ -112,17 +112,31 @@ object NilTermFormat extends TermFormat[Nil.type] {
 
 class ListTermFormat[T](private val elementFormat: TermFormat[T]) extends TermFormat[List[T]] {
   override def write(out: Output, value: List[T]): Output = {
-    out.put(108.toByte)
-       .put(ByteBuffer.allocate(4).putInt(value.length).array())
+    ListTermFormat.writeHeader(out, value.length)
     value.foreach(elementFormat.write(out, _))
     NilTermFormat.write(out, Nil)
     out
   }
+
   override def read(in: Input): List[T] = {
-    val elements = ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
+    val elements = ListTermFormat.readLength(in)
     val readList = (0 until elements).map(_ => elementFormat.read(in)).toList
     NilTermFormat.read(in)
     readList
+  }
+
+ 
+}
+object ListTermFormat {
+  val tag = 108.toByte
+  
+  def readLength(in: bert.format.io.Input): Int = {
+    ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
+  }
+  
+  def writeHeader(out: bert.format.io.Output, length: Int): Output = {
+    out.put(tag)
+       .put(ByteBuffer.allocate(4).putInt(length).array())
   }
 }
 
