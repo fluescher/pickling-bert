@@ -33,7 +33,7 @@ package pickling {
       /* consume term format version. TODO should be checked */
       new BertPickleReader(new ArrayInput(data.drop(1)), mirror, format)
 
-    override def toString = s"""BertPickle(${value.mkString("[", ",", "]")})"""
+    override def toString: String = s"""BertPickle(${value.mkString("[", ",", "]")})"""
   }
 
   object BertPickle {
@@ -132,11 +132,11 @@ package pickling {
   class BertPickleFormat extends PickleFormat {
     type PickleType = BertPickle
     type OutputType = Output[Array[Byte]]
-    def createBuilder() = new BertPickleBuilder(this)
+    def createBuilder(): BertPickleBuilder = new BertPickleBuilder(this)
 
-    override def createBuilder(out: Output[Array[Byte]]): PBuilder = createBuilder()
+    override def createBuilder(out: Output[Array[Byte]]): BertPickleBuilder = createBuilder()
 
-    override def createReader(pickle: PickleType, mirror: Mirror) = pickle.createReader(mirror, this)
+    override def createReader(pickle: PickleType, mirror: Mirror): PReader = pickle.createReader(mirror, this)
 
     val KEY_NULL = FastTypeTag.Null.key
     val KEY_BYTE = FastTypeTag.Byte.key

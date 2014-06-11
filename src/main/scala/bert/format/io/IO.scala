@@ -9,9 +9,9 @@ trait Input {
   def consume(n: Int): Array[Byte]
 }
 class ArrayInput(private var wrapee: Array[Byte]) extends Input {
-  override def size = wrapee.length
-  override def head = wrapee(0)
-  override def consume(n: Int) = {
+  override def size: Int = wrapee.length
+  override def head: Byte = wrapee(0)
+  override def consume(n: Int): Array[Byte] = {
     val readData = Arrays.copyOfRange(wrapee, 0, n)
     wrapee = wrapee.drop(n)
     readData
@@ -40,6 +40,6 @@ class ArrayOutput extends Output {
     data ++= newData; 
     this
   }
-  override def toArray = data.toArray
+  override def toArray: Array[Byte] = data.toArray
 }
 

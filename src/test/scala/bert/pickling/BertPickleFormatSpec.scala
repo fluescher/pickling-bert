@@ -7,7 +7,7 @@ import org.scalatest.prop.PropertyChecks
 import java.util.Arrays
 import bert.Bert
 
-class BertPickleFormatTest extends WordSpec with Matchers with Checkers with PropertyChecks {
+class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
   "BertPickleFormat" should {
     "unpickle a pickled list" in {
       import scala.pickling._

@@ -20,16 +20,16 @@ trait FormatReader[T] {
   def read(in: Input): T
 }
 
-sealed abstract class TermFormat[T] extends FormatWriter[T] with FormatReader[T]
+sealed abstract class TermFormat[T] extends FormatWriter[T] with FormatReader[T] 
 
 object TermFormat {
-  def readWithTypeTag[T](tag: Byte, reader: Input => T)(in: Input): T = 
-    if(in.head != tag) throw InvalidTag(in.head)
-    else reader(in)
+  def readWithTypeTag[T](tag: Byte, reader: Input => T)(in: Input): T =
+    if (in.head != tag) { throw InvalidTag(in.head) }
+    else {reader(in)}
   
   def readWithLengthCheck[T](length: Int, reader: Input => T)(in: Input): T = 
-    if(in.size < length) throw TermTooShort()
-    else reader(in)
+    if(in.size < length) { throw TermTooShort() }
+    else {reader(in)}
 }
 
 object IntTermFormat extends TermFormat[Int] {
@@ -38,7 +38,7 @@ object IntTermFormat extends TermFormat[Int] {
   val tag: Byte = 98
   val length: Int = 5
   
-  override def write(out: Output, value: Int) = 
+  override def write(out: Output, value: Int): Output = 
     out.put(tag.toByte)
        .put(ByteBuffer.allocate(4).putInt(value).array())
 
@@ -54,8 +54,10 @@ object IntTermFormat extends TermFormat[Int] {
 }
 
 object SmallIntTermFormat extends TermFormat[Int] {
-  override def write(out: Output, value: Int) = 
-    out.put(97.toByte)
+  val tag: Byte = 97
+  
+  override def write(out: Output, value: Int): Output = 
+    out.put(tag)
        .put(ByteBuffer.allocate(4).putInt(value).array().drop(3))
        
   override def read(in: Input): Int = { 
@@ -68,8 +70,10 @@ object SmallIntTermFormat extends TermFormat[Int] {
 }
 
 object DoubleTermFormat extends TermFormat[Double] {
-  override def write(out: Output, value: Double) = 
-    out.put(70.toByte)
+   val tag: Byte = 70
+  
+  override def write(out: Output, value: Double): Output = 
+    out.put(tag)
        .put(ByteBuffer.allocate(8).putDouble(value).array())
 
   override def read(in: Input): Double = 
@@ -103,7 +107,9 @@ object StringTermFormat extends TermFormat[String] {
 }
 
 object NilTermFormat extends TermFormat[Nil.type] {
-  override def write(out: Output, value: Nil.type): Output = out.put(106.toByte)
+  val tag: Byte = 106 
+  
+  override def write(out: Output, value: Nil.type): Output = out.put(tag)
   override def read(in: Input): Nil.type =  {
     in.consume(1)
     Nil
@@ -124,8 +130,6 @@ class ListTermFormat[T](private val elementFormat: TermFormat[T]) extends TermFo
     NilTermFormat.read(in)
     readList
   }
-
- 
 }
 object ListTermFormat {
   val tag = 108.toByte
@@ -143,7 +147,7 @@ object ListTermFormat {
 class MapTermFormat[K,V](private val keyFormat: TermFormat[K],
                          private val valueFormat: TermFormat[V]) extends TermFormat[Map[K,V]] {
   override def write(out: Output, value: Map[K,V]): Output = {
-    out.put(116.toByte)
+    out.put(MapTermFormat.tag)
        .put(ByteBuffer.allocate(4).putInt(value.size).array())
     value.foreach({case (key, value) =>
       keyFormat.write(out, key)
@@ -155,4 +159,7 @@ class MapTermFormat[K,V](private val keyFormat: TermFormat[K],
     val elements = ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
     ((0 until elements).foldLeft(Map[K,V]())((map, _) => map + (keyFormat.read(in) -> valueFormat.read(in))))
   }
+}
+object MapTermFormat {
+  val tag: Byte = 116
 }

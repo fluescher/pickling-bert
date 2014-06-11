@@ -25,22 +25,20 @@ object Bert {
   }
   object TermLike {
     implicit object TermLikeInt extends TermLike[Int] {
-      override def termFormat = IntTermFormat
-
+      override def termFormat: TermFormat[Int] = IntTermFormat
     }
     implicit object TermLikeDouble extends TermLike[Double] {
-      override def termFormat = DoubleTermFormat
+      override def termFormat: TermFormat[Double] = DoubleTermFormat
     }
     implicit object TermLikeString extends TermLike[String] {
-      override def termFormat = StringTermFormat
-        
+      override def termFormat: TermFormat[String] = StringTermFormat
     }
     implicit def termLikeMap[K,V](implicit termLikeK: TermLike[K], termLikeV: TermLike[V]): TermLike[Map[K,V]] = new TermLike[Map[K,V]] {
-      override def termFormat = new MapTermFormat(implicitly[TermLike[K]].termFormat,
-                                                  implicitly[TermLike[V]].termFormat)
+      override def termFormat: TermFormat[Map[K,V]] = new MapTermFormat(implicitly[TermLike[K]].termFormat,
+                                                                        implicitly[TermLike[V]].termFormat)
     }
     implicit def termLikeList[T: TermLike]: TermLike[List[T]] = new TermLike[List[T]] {
-      override def termFormat = new ListTermFormat(implicitly[TermLike[T]].termFormat)
+      override def termFormat: TermFormat[List[T]] = new ListTermFormat(implicitly[TermLike[T]].termFormat)
     }
   }
 
