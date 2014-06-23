@@ -18,6 +18,15 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       
       result should be(List(1,2,3,4))
     }
+//    "unpickle an empty list" in {
+//      import scala.pickling._
+//      import bert.pickling._
+//      
+//      val pickle = List[Int]().pickle
+//      val result = pickle.unpickle[List[Int]]
+//      
+//      result should be(List())
+//    }
     "unpickle a pickled Int" in {
       import scala.pickling._
       import bert.pickling._
@@ -36,17 +45,45 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       
       result should be(List(1,2,3,4))
     }
+    "unpickle a pickled string" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val pickle = "hello scala".pickle
+      val result = pickle.unpickle[String]
+      
+      result should be("hello scala")
+    }
+    "unpickle a pickled double" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val pickle = -12.3.pickle
+      val result = pickle.unpickle[Double]
+      
+      result should be(-12.3)
+    }
+    "unpickle null" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val ref: Object = null
+      val pickle = ref.pickle
+      val result = pickle.unpickle[Object]
+      
+      result should be(null)
+    }
   }
   
   "Default pickling" should {
     "unpickle a binary pickled list" in {
       import scala.pickling._
-      import json._
+      import binary._
       
-      val pickle = List(1,2,3,4).pickle
+      val pickle = List[Int]().pickle
       val result = pickle.unpickle[List[Int]]
       
-      result should be(List(1,2,3,4))
+      result should be(List())
     }
   }
 }

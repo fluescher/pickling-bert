@@ -8,6 +8,8 @@ import bert.format.IntTermFormat
 import bert.format.NilTermFormat
 import bert.format.ListTermFormat
 import bert.format.io.ArrayInput
+import bert.format.StringTermFormat
+import bert.format.DoubleTermFormat
 
 package object pickling {
   implicit val pickleFormat = new BertPickleFormat
@@ -48,16 +50,16 @@ package pickling {
 
     @inline override def beginEntry(picklee: Any): PBuilder = withHints { hints =>
       hints.tag.key match {
-          case KEY_NULL =>
+          case KEY_NULL => NilTermFormat.write(output, Nil)
           case KEY_BYTE =>
           case KEY_SHORT =>
-          case KEY_CHAR =>
+          case KEY_CHAR => 
           case KEY_INT => IntTermFormat.write(output, picklee.asInstanceOf[Int])
-          case KEY_LONG =>
+          case KEY_LONG => 
           case KEY_BOOLEAN =>
-          case KEY_FLOAT =>
-          case KEY_DOUBLE =>
-          case KEY_SCALA_STRING | KEY_JAVA_STRING =>
+          case KEY_FLOAT => 
+          case KEY_DOUBLE => DoubleTermFormat.write(output, picklee.asInstanceOf[Double])
+          case KEY_SCALA_STRING | KEY_JAVA_STRING => StringTermFormat.write(output, picklee.asInstanceOf[String])
           case KEY_ARRAY_BYTE =>
           case KEY_ARRAY_CHAR =>
           case KEY_ARRAY_SHORT =>
@@ -78,6 +80,8 @@ package pickling {
     @inline override def endEntry(): Unit = { /* do nothing */ }
 
     @inline override def beginCollection(length: Int): PBuilder = {
+
+      println(s"length: $length")
       ListTermFormat.writeHeader(output, length)
       this
     }
@@ -99,18 +103,27 @@ package pickling {
 
     override def beginEntryNoTag(): String = beginEntry().key
 
-    def beginEntry(): FastTypeTag[_] = input.head match {
-      case IntTermFormat.tag   => FastTypeTag.Int
-      case ListTermFormat.tag  => FastTypeTag(mirror, "scala.collection.immutable.$colon$colon[scala.Int]")
-    }
+    def beginEntry(): FastTypeTag[_] = {println(input.head); input.head match {
+      case IntTermFormat.tag     => FastTypeTag.Int
+      case StringTermFormat.tag  => FastTypeTag.ScalaString
+      case DoubleTermFormat.tag  => FastTypeTag.Double
+      case NilTermFormat.tag     => FastTypeTag.Null
+      case ListTermFormat.tag    => FastTypeTag(mirror, "scala.collection.immutable.$colon$colon[scala.Int]")
+    }}
 
     override def atPrimitive: Boolean = input.head match {
-      case IntTermFormat.tag   => true
-      case _                   => false
+      case IntTermFormat.tag     => true
+      case StringTermFormat.tag  => true
+      case DoubleTermFormat.tag  => true
+      case NilTermFormat.tag     => true
+      case _                     => false
     }
 
     override def readPrimitive(): Any = input.head match {
-      case IntTermFormat.tag   => IntTermFormat.read(input)
+      case IntTermFormat.tag     => IntTermFormat.read(input)
+      case StringTermFormat.tag  => StringTermFormat.read(input) 
+      case DoubleTermFormat.tag  => DoubleTermFormat.read(input)
+      case NilTermFormat.tag     => NilTermFormat.read(input); null
     }
 
     override def atObject: Boolean = false
@@ -119,9 +132,9 @@ package pickling {
 
     override def endEntry(): Unit = { }
 
-    override def beginCollection(): PReader = this  
+    override def beginCollection(): PReader = {println("ICI"); this}  
 
-    override def readLength(): Int = ListTermFormat.readLength(input)
+    override def readLength(): Int = {val l = ListTermFormat.readLength(input); println("LENGTH: " + l); l}
 
     override def readElement(): PReader = this
 
