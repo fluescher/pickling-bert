@@ -18,15 +18,6 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       
       result should be(List(1,2,3,4))
     }
-//    "unpickle an empty list" in {
-//      import scala.pickling._
-//      import bert.pickling._
-//      
-//      val pickle = List[Int]().pickle
-//      val result = pickle.unpickle[List[Int]]
-//      
-//      result should be(List())
-//    }
     "unpickle a pickled Int" in {
       import scala.pickling._
       import bert.pickling._
@@ -72,6 +63,16 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       val result = pickle.unpickle[Object]
       
       result should be(null)
+    }
+    "unpickle an int arry" in {
+      import scala.pickling._
+      import bert.pickling._
+
+      val arr = Array(1,2,3)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Int]]
+      
+      result should be(Array(1,2,3))
     }
   }
   
