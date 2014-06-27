@@ -47,7 +47,7 @@ package pickling {
   final class BertPickleBuilder(format: BertPickleFormat) extends PBuilder with PickleTools {
     import format._
     
-    private var output: bert.format.io.ArrayOutput = new bert.format.io.ArrayOutput()
+    private val output: bert.format.io.ArrayOutput = new bert.format.io.ArrayOutput()
 
     private def writeArray[T](arr: Array[T], pickler: T => Unit) {
       ListTermFormat.writeHeader(output, arr.length)
@@ -62,11 +62,11 @@ package pickling {
     @inline override def beginEntry(picklee: Any): PBuilder = withHints { hints =>
       hints.tag.key match {
           case KEY_NULL => NilTermFormat.write(output, Nil)
-          case KEY_BYTE =>
-          case KEY_SHORT =>
+          case KEY_BYTE => IntTermFormat.write(output, picklee.asInstanceOf[Byte])
+          case KEY_SHORT => IntTermFormat.write(output, picklee.asInstanceOf[Short])
           case KEY_CHAR => 
           case KEY_INT => IntTermFormat.write(output, picklee.asInstanceOf[Int])
-          case KEY_LONG => 
+          case KEY_LONG => IntTermFormat.write(output, picklee.asInstanceOf[Long].toInt)
           case KEY_BOOLEAN =>
           case KEY_FLOAT => 
           case KEY_DOUBLE => DoubleTermFormat.write(output, picklee.asInstanceOf[Double])
@@ -110,7 +110,7 @@ package pickling {
   class BertPickleReader(input: ArrayInput, val mirror: Mirror, format: BertPickleFormat) extends PReader with PickleTools {
     import format._
 
-    override def beginEntryNoTag(): String = beginEntry().key
+    private var lastTag: FastTypeTag[_] = null // TODO try to get rid of this
 
     private def readArray[T: ClassTag](length: Int, unpickler: => T): Array[T] = {
       var i = 0
@@ -123,34 +123,37 @@ package pickling {
       arr
     }
     
-    def beginEntry(): FastTypeTag[_] = withHints { hints => hints.tag.key match {
+    override def beginEntryNoTag(): String = beginEntry().key
+    
+    override def beginEntry(): FastTypeTag[_] = withHints { hints => hints.tag.key match {
       case KEY_ARRAY_INT => FastTypeTag.ArrayInt
-      case _ => input.head match {
-        case IntTermFormat.tag     => FastTypeTag.Int
+      case _ => lastTag = input.head match {
         case StringTermFormat.tag  => FastTypeTag.ScalaString
-        case DoubleTermFormat.tag  => FastTypeTag.Double
         case NilTermFormat.tag     => FastTypeTag.Null
         case ListTermFormat.tag    => FastTypeTag(mirror, "scala.collection.immutable.$colon$colon[scala.Int]")
-      }}
+        case _                     => hints.tag
+      }; lastTag}
     }
 
-    override def atPrimitive: Boolean =  withHints { hints => hints.tag.key match {
-      case _ => input.head match {
-        case IntTermFormat.tag     => true
-        case StringTermFormat.tag  => true
-        case DoubleTermFormat.tag  => true
-        case NilTermFormat.tag     => true
-        case _                     => true
-      } 
-    }}
+    override def atPrimitive: Boolean = input.head match {
+      case _                     => true
+    }
 
-    override def readPrimitive(): Any = input.head match {
-      case IntTermFormat.tag     => IntTermFormat.read(input)
+    override def readPrimitive(): Any = withHints { hints => println(hints); input.head match {
+      case IntTermFormat.tag     => {
+        val value = IntTermFormat.read(input)
+        lastTag.key match {
+          case KEY_LONG   => value.toLong
+          case KEY_SHORT  => value.toShort
+          case KEY_BYTE   => value.toByte
+          case _          => value
+        }
+      }
       case StringTermFormat.tag  => StringTermFormat.read(input) 
       case DoubleTermFormat.tag  => DoubleTermFormat.read(input)
       case NilTermFormat.tag     => NilTermFormat.read(input); null
       case _ => readArray(readLength(), IntTermFormat.read(input))
-    }
+    }}
 
     override def atObject: Boolean = false
 

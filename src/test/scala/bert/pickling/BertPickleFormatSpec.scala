@@ -27,6 +27,33 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       
       result should be(12)
     }
+    "unpickle a pickled Long" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val pickle = 12L.pickle
+      val result = pickle.unpickle[Long]
+      
+      result should be(12)
+    }
+    "unpickle a pickled short" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val pickle = 12.toShort.pickle
+      val result = pickle.unpickle[Short]
+      
+      result should be(12)
+    }
+    "unpickle a pickled byte" in {
+      import scala.pickling._
+      import bert.pickling._
+      
+      val pickle = 12.toByte.pickle
+      val result = pickle.unpickle[Byte]
+      
+      result should be(12)
+    }
     "produce a Bert compatible pickled list" in {
       import scala.pickling._
       import bert.pickling._
@@ -64,7 +91,7 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       
       result should be(null)
     }
-    "unpickle an int arry" in {
+    "unpickle an int array" in {
       import scala.pickling._
       import bert.pickling._
 
@@ -79,12 +106,12 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
   "Default pickling" should {
     "unpickle a binary pickled list" in {
       import scala.pickling._
-      import binary._
+      import json._
       
-      val pickle = List[Int]().pickle
-      val result = pickle.unpickle[List[Int]]
+      val pickle = 12.toShort.pickle
+      val result = pickle.unpickle[Short]
       
-      result should be(List())
+      result should be(12.toShort)
     }
   }
 }
