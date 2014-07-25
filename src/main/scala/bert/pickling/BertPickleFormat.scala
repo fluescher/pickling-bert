@@ -18,7 +18,6 @@ package object pickling {
 }
 
 package pickling {
-  import bert.pickling._
 
   abstract class BertPickle extends Pickle {
     type PickleFormatType = BertPickleFormat
@@ -75,9 +74,9 @@ package pickling {
           case KEY_ARRAY_CHAR =>
           case KEY_ARRAY_SHORT =>
           case KEY_ARRAY_INT => writeArray(picklee.asInstanceOf[Array[Int]], (i: Int) => IntTermFormat.write(output, i))
-          case KEY_ARRAY_LONG =>
+          case KEY_ARRAY_LONG => 
           case KEY_ARRAY_BOOLEAN =>
-          case KEY_ARRAY_FLOAT =>
+          case KEY_ARRAY_FLOAT => 
           case KEY_ARRAY_DOUBLE => 
           case _ => 
       }
@@ -139,7 +138,7 @@ package pickling {
       case _                     => true
     }
 
-    override def readPrimitive(): Any = withHints { hints => println(hints); input.head match {
+    override def readPrimitive(): Any = withHints { hints => input.head match {
       case IntTermFormat.tag     => {
         val value = IntTermFormat.read(input)
         lastTag.key match {

@@ -1,17 +1,11 @@
 package bert.format
 
-import java.util.Arrays
-import java.util.ArrayList
-import scala.collection.mutable.ArrayBuffer
-import scala.pickling.binary.ByteBuffer
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import bert.format.io.Output
 import bert.format.io.Input
-import bert.format.io.ArrayInput._
 import bert.Bert.TermTooShort
 import bert.Bert.InvalidTag
-
 
 trait FormatWriter[T] {
   def write(out: Output, t: T): Output
@@ -102,8 +96,9 @@ object StringTermFormat extends TermFormat[String] {
         i => readValue(i, stringLength))(in)
     }))
   
-  private def readValue(in: Input, stringLength: Int): String = 
+  private def readValue(in: Input, stringLength: Int): String =
     new String(in.consume(stringLength), StandardCharsets.US_ASCII)
+
 }
 
 object NilTermFormat extends TermFormat[Nil.type] {
@@ -115,6 +110,21 @@ object NilTermFormat extends TermFormat[Nil.type] {
     Nil
   }
 }
+
+object AtomTermFormat extends TermFormat[Symbol] {
+  val tag = 100.toByte
+
+  override def read(in: Input): Symbol = {
+    val stringLength = ByteBuffer.wrap(in.consume(3).drop(1)).getShort()
+    Symbol(new String(in.consume(stringLength), StandardCharsets.US_ASCII))
+  }
+
+  override def write(out: Output, t: Symbol): Output =
+    out.put(tag)
+      .put(ByteBuffer.allocate(2).putShort(t.name.length().toShort).array())
+      .put(t.name.getBytes(StandardCharsets.US_ASCII))
+}
+
 
 class ListTermFormat[T](private val elementFormat: TermFormat[T]) extends TermFormat[List[T]] {
   override def write(out: Output, value: List[T]): Output = {

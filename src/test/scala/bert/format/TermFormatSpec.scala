@@ -137,7 +137,28 @@ class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyC
       encoded should be(Array(116,0,0,0,1,107,0,2,75,49,98,0,0,4,176).map(_.toByte))
     }
   }
-  
+
+  "Atom Term Format" should {
+    "start with the type tag" in {
+      val encoded = AtomTermFormat.write(new ArrayOutput(), 'Atom).toArray
+
+      encoded.length should be(7)
+      encoded(0) should be(100)
+    }
+    "store the correct length information" in {
+      val encoded = AtomTermFormat.write(new ArrayOutput(), 'Atom).toArray
+
+      encoded(1) should be(0)
+      encoded(2) should be(4)
+    }
+    "be able to decode an Erlang Atom" in {
+      val encoded = Array(100,0,5,104,101,108,108,111).map(_.toByte)
+      val decoded = AtomTermFormat.read(encoded)
+
+      decoded should equal('hello)
+    }
+  }
+
   "List Term Format" should {
     val intListFormat = new ListTermFormat(IntTermFormat)
     val stringListFormat = new ListTermFormat(StringTermFormat)
