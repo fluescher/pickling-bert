@@ -11,7 +11,6 @@ libraryDependencies ++= Seq(
 	)
 
 resolvers ++= Seq(
-		 Resolver.sonatypeRepo("snapshots"),
 		 Resolver.sonatypeRepo("releases"))
 
 scalaVersion := "2.11.0"

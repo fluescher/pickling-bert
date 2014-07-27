@@ -1,22 +1,16 @@
 package bert
 
-import org.scalatest.Matchers
-import org.scalatest.prop.Checkers
-import Bert.TermLike
-import org.scalatest.WordSpec
-import scala.util.Failure
-import scala.util.Try
-import bert.Bert.InvalidTag
-import bert.Bert.TermTooShort
-import java.util.Arrays
-import java.nio.charset.StandardCharsets
-import org.scalatest.prop.PropertyChecks
+import bert.Bert.{InvalidTag, TermTooShort}
 import org.scalacheck.Gen
+import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.prop.{Checkers, PropertyChecks}
+
+import scala.util.Failure
 
 class BertSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
 
-  import Bert.PROTOCOL_VERSION
-  import BertSpec._
+  import bert.Bert.PROTOCOL_VERSION
+  import bert.BertSpec._
   
   "A Bert encoded Int" should {
     "start with the distribution header" in {

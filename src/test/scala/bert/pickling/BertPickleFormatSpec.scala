@@ -1,17 +1,15 @@
 package bert.pickling
 
-import org.scalatest.WordSpec
-import org.scalatest.Matchers
-import org.scalatest.prop.Checkers
-import org.scalatest.prop.PropertyChecks
-import java.util.Arrays
 import bert.Bert
+import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.prop.{Checkers, PropertyChecks}
 
 class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
   "BertPickleFormat" should {
     "unpickle a pickled list" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = List(1,2,3,4).pickle
       val result = pickle.unpickle[List[Int]]
@@ -19,8 +17,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(List(1,2,3,4))
     }
     "unpickle a pickled Int" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = 12.pickle
       val result = pickle.unpickle[Int]
@@ -28,8 +27,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(12)
     }
     "unpickle a pickled Long" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = 12L.pickle
       val result = pickle.unpickle[Long]
@@ -37,8 +37,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(12)
     }
     "unpickle a pickled short" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = 12.toShort.pickle
       val result = pickle.unpickle[Short]
@@ -46,8 +47,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(12)
     }
     "unpickle a pickled byte" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = 12.toByte.pickle
       val result = pickle.unpickle[Byte]
@@ -55,8 +57,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(12)
     }
     "produce a Bert compatible pickled list" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = List(1,2,3,4).pickle
       val result = Bert.fromBert[List[Int]](pickle.value).get
@@ -64,8 +67,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(List(1,2,3,4))
     }
     "unpickle a pickled string" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = "hello scala".pickle
       val result = pickle.unpickle[String]
@@ -73,8 +77,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be("hello scala")
     }
     "unpickle a pickled double" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val pickle = -12.3.pickle
       val result = pickle.unpickle[Double]
@@ -82,8 +87,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(-12.3)
     }
     "unpickle null" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
       
       val ref: Object = null
       val pickle = ref.pickle
@@ -92,8 +98,9 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       result should be(null)
     }
     "unpickle an int array" in {
-      import scala.pickling._
       import bert.pickling._
+
+import scala.pickling._
 
       val arr = Array(1,2,3)
       val pickle = arr.pickle
@@ -106,7 +113,7 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
   "Default pickling" should {
     "unpickle a binary pickled list" in {
       import scala.pickling._
-      import json._
+      import scala.pickling.json._
       
       val pickle = 12.toShort.pickle
       val result = pickle.unpickle[Short]

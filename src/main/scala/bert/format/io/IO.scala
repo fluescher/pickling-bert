@@ -1,6 +1,7 @@
 package bert.format.io
 
 import java.util.Arrays
+
 import scala.collection.mutable.ArrayBuffer
 
 trait Input {
@@ -33,11 +34,11 @@ class ArrayOutput extends Output {
   private val data = new ArrayBuffer[Byte]()
 
   override def put(newData: Byte): ArrayOutput = { 
-    data += newData; 
+    data += newData
     this 
   }
   override def put(newData: Array[Byte]): ArrayOutput = {
-    data ++= newData; 
+    data ++= newData
     this
   }
   override def toArray: Array[Byte] = data.toArray

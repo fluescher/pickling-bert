@@ -1,14 +1,11 @@
 package bert.format
 
-import org.scalatest.Matchers
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.prop.Checkers
-import org.scalatest.WordSpec
+import bert.Bert.TermTooShort
+import bert.BertSpec._
 import bert.format.io.ArrayInput._
 import bert.format.io._
-import bert.BertSpec._
-import org.scalacheck.Gen
-import bert.Bert.TermTooShort
+import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalatest.{Matchers, WordSpec}
 
 class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
   "Int Term Format" should {
@@ -72,8 +69,8 @@ class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyC
       
       encoded(0) should be(97)
     }
-    "should be able to decode a number in" in {
-      val encoded = Array(197,13).map(_.toByte)
+    "should be able to decode a number" in {
+      val encoded = Array(97,13).map(_.toByte)
       val decoded = SmallIntTermFormat.read(encoded)
       
       decoded should be(13)

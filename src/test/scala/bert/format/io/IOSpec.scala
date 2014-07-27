@@ -1,9 +1,7 @@
 package bert.format.io
 
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
-import org.scalatest.prop.Checkers
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalatest.{Matchers, WordSpec}
 
 class IOSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
   "Input" should {

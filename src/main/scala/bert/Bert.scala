@@ -1,17 +1,11 @@
 package bert
 
-import java.nio.ByteBuffer
-import scala.annotation.implicitNotFound
-import scala.util.Success
-import scala.util.Try
-import scala.util.Failure
-import scala.annotation.tailrec
-import java.nio.charset.StandardCharsets
-import java.util.Arrays
-
 import bert.format._
-import bert.format.io._
 import bert.format.io.ArrayInput._
+import bert.format.io._
+
+import scala.annotation.implicitNotFound
+import scala.util.{Success, Try}
 
 object Bert {
   type Term = Array[Byte]
@@ -56,6 +50,6 @@ object Bert {
 
   sealed trait BertException extends RuntimeException
   case class TermTooShort() extends BertException
-  case class InvalidTag(val tag: Int) extends BertException
+  case class InvalidTag(tag: Int) extends BertException
 
 }

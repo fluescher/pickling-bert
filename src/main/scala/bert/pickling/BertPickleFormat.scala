@@ -1,16 +1,12 @@
 package bert
 
-import scala.pickling._
-import scala.language.implicitConversions
-import scala.pickling.internal._
-import scala.reflect.runtime.universe.Mirror
-import bert.format.IntTermFormat
-import bert.format.NilTermFormat
-import bert.format.ListTermFormat
+import bert.format.{DoubleTermFormat, IntTermFormat, ListTermFormat, NilTermFormat, StringTermFormat}
 import bert.format.io.ArrayInput
-import bert.format.StringTermFormat
-import bert.format.DoubleTermFormat
+
+import scala.language.implicitConversions
+import scala.pickling._
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.Mirror
 
 package object pickling {
   implicit val pickleFormat = new BertPickleFormat
@@ -139,7 +135,7 @@ package pickling {
     }
 
     override def readPrimitive(): Any = withHints { hints => input.head match {
-      case IntTermFormat.tag     => {
+      case IntTermFormat.tag     =>
         val value = IntTermFormat.read(input)
         lastTag.key match {
           case KEY_LONG   => value.toLong
@@ -147,8 +143,7 @@ package pickling {
           case KEY_BYTE   => value.toByte
           case _          => value
         }
-      }
-      case StringTermFormat.tag  => StringTermFormat.read(input) 
+      case StringTermFormat.tag  => StringTermFormat.read(input)
       case DoubleTermFormat.tag  => DoubleTermFormat.read(input)
       case NilTermFormat.tag     => NilTermFormat.read(input); null
       case _ => readArray(readLength(), IntTermFormat.read(input))
