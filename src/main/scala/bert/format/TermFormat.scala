@@ -79,16 +79,14 @@ object StringTermFormat extends TermFormat[String] with CheckedReader[String] {
   override val tag: Byte = 107
   protected override val minimumLength = 3
   
-  override def write(out: Output, value: String): Output = {
+  override def write(out: Output, value: String): Output =
     out.put(tag)
        .put(ByteBuffer.allocate(2).putShort(value.length().toShort).array())
        .put(value.getBytes(StandardCharsets.US_ASCII))
-  }
-  
-  override def readChecked(in: Input): String = {
+
+  override def readChecked(in: Input): String =
     readWithChecks(in)
-  }
-  
+
   private def readWithChecks(in: Input) = {
     if(3 > in.size) throw TermTooShort()
     val stringLength = ByteBuffer.wrap(in.consume(3).drop(1)).getShort()
@@ -150,10 +148,9 @@ object ListTermFormat {
 
   val tag = 108.toByte
 
-  def readLength(in: bert.format.io.Input): Int = {
+  def readLength(in: bert.format.io.Input): Int =
     ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
-  }
-  
+
   def writeHeader(out: bert.format.io.Output, length: Int): Output = {
     out.put(tag)
        .put(ByteBuffer.allocate(4).putInt(length).array())
