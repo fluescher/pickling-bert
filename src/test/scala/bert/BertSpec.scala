@@ -2,8 +2,8 @@ package bert
 
 import bert.Bert.{InvalidTag, TermTooShort}
 import org.scalacheck.Gen
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalatest.{Matchers, WordSpec}
 
 import scala.util.Failure
 

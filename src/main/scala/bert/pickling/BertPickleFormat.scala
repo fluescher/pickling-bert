@@ -1,7 +1,7 @@
 package bert
 
-import bert.format.{DoubleTermFormat, IntTermFormat, ListTermFormat, NilTermFormat, StringTermFormat}
 import bert.format.io.ArrayInput
+import bert.format.{DoubleTermFormat, IntTermFormat, ListTermFormat, NilTermFormat, StringTermFormat}
 
 import scala.language.implicitConversions
 import scala.pickling._
@@ -15,7 +15,7 @@ package object pickling {
 
 package pickling {
 
-import bert.format.AtomTermFormat
+import bert.format.{SmallIntTermFormat, AtomTermFormat}
 
 abstract class BertPickle extends Pickle {
     type PickleFormatType = BertPickleFormat
@@ -79,16 +79,6 @@ abstract class BertPickle extends Pickle {
     
     private val output: bert.format.io.ArrayOutput = new bert.format.io.ArrayOutput()
 
-    private def writeArray[T](arr: Array[T], pickler: T => Unit) {
-      ListTermFormat.writeHeader(output, arr.length)
-      var i = 0
-      while(i < arr.length) {
-        pickler(arr(i))
-        i += 1
-      }
-      NilTermFormat.write(output, Nil)
-    }
-    
     @inline override def beginEntry(picklee: Any): PBuilder = withHints { hints =>
       if(picklee == null) {
         NilTermFormat.write(output, Nil)
@@ -112,7 +102,7 @@ abstract class BertPickle extends Pickle {
           case KEY_ARRAY_BOOLEAN =>
           case KEY_ARRAY_FLOAT =>
           case KEY_ARRAY_DOUBLE =>
-          case _@s if !s.startsWith("scala.collection.immutable.$colon$colon") => /* special case if list is used */
+          case _ @ s if !s.startsWith("scala.collection.immutable.$colon$colon") => /* special case if list is used */
             AtomTermFormat.write(output, 'Object)
             StringTermFormat.write(output, hints.tag.key)
           case _ =>
@@ -143,13 +133,71 @@ abstract class BertPickle extends Pickle {
 
     @inline override def result() = 
       BertPickle(Array(Bert.PROTOCOL_VERSION) ++ output.toArray)
+
+    private def writeArray[T](arr: Array[T], pickler: T => Unit) {
+      ListTermFormat.writeHeader(output, arr.length)
+      var i = 0
+      while(i < arr.length) {
+        pickler(arr(i))
+        i += 1
+      }
+      NilTermFormat.write(output, Nil)
+    }
   }
   
   class BertPickleReader(input: ArrayInput, val mirror: Mirror, format: BertPickleFormat) extends PReader with PickleTools {
 
     import format._
 
-    private var lastTag: FastTypeTag[_] = null // TODO try to get rid of this
+    override def beginEntryNoTag(): String = {
+      pinHints() // TODO Check if this is really necessary and if it causes any problems
+      withHints { hints => input.head match {
+          case NilTermFormat.tag => FastTypeTag.Null.key
+          case ListTermFormat.tag => "scala.collection.immutable.$colon$colon[scala.Int]"
+          case AtomTermFormat.tag => {
+            AtomTermFormat.read(input) match {
+              case 'Object => StringTermFormat.read(input)
+            }
+          }
+          case _ =>  hints.tag.key
+        }
+      }
+    }
+
+    override def beginEntry(): FastTypeTag[_] = ???
+
+    override def atPrimitive: Boolean = input.head match {
+      case AtomTermFormat.tag => false
+      case _ => true
+    }
+
+    override def readPrimitive(): Any = withHints { hints => hints.tag.key match {
+      case KEY_LONG => IntTermFormat.read(input).toLong
+      case KEY_SHORT => IntTermFormat.read(input).toShort
+      case KEY_BYTE => IntTermFormat.read(input).toByte
+      case KEY_INT => IntTermFormat.read(input)
+      case KEY_SCALA_STRING | KEY_JAVA_STRING => StringTermFormat.read(input)
+      case KEY_DOUBLE => DoubleTermFormat.read(input)
+      case KEY_NULL => NilTermFormat.read(input)
+      case _ => input.head match {
+        case NilTermFormat.tag => NilTermFormat.read(input); null
+        case _ => readArray(readLength(), IntTermFormat.read(input))
+      }
+    }}
+
+    override def atObject: Boolean = !atPrimitive
+
+    override def readField(name: String): BertPickleReader = this
+
+    override def endEntry(): Unit = {}
+
+    override def beginCollection(): PReader = this
+
+    override def readLength(): Int = ListTermFormat.readLength(input)
+
+    override def readElement(): PReader = this
+
+    override def endCollection(): Unit = NilTermFormat.read(input)
 
     private def readArray[T: ClassTag](length: Int, unpickler: => T): Array[T] = {
       var i = 0
@@ -161,63 +209,6 @@ abstract class BertPickle extends Pickle {
       NilTermFormat.read(input)
       arr
     }
-
-    override def beginEntryNoTag(): String = {
-      withHints { hints => hints.tag.key match {
-        case KEY_ARRAY_INT => FastTypeTag.ArrayInt.key
-        case _ => lastTag = input.head match {
-          case StringTermFormat.tag => FastTypeTag.ScalaString
-          case NilTermFormat.tag => FastTypeTag.Null
-          case ListTermFormat.tag => FastTypeTag(mirror, "scala.collection.immutable.$colon$colon[scala.Int]")
-          case AtomTermFormat.tag => {
-            AtomTermFormat.read(input) match {
-              case 'Object => FastTypeTag(mirror, StringTermFormat.read(input))
-            }
-          }
-          case _ => hints.tag
-        }
-        lastTag.key
-      }}
-    }
-
-    override def beginEntry(): FastTypeTag[_] = ???
-
-    override def atPrimitive: Boolean = input.head match {
-      case AtomTermFormat.tag => false
-      case _ => true
-    }
-
-    override def readPrimitive(): Any = withHints { hints => input.head match {
-      case IntTermFormat.tag =>
-        val value = IntTermFormat.read(input)
-        lastTag.key match {
-          case KEY_LONG => value.toLong
-          case KEY_SHORT => value.toShort
-          case KEY_BYTE => value.toByte
-          case _ => value
-        }
-      case StringTermFormat.tag => StringTermFormat.read(input)
-      case DoubleTermFormat.tag => DoubleTermFormat.read(input)
-      case NilTermFormat.tag => NilTermFormat.read(input); null
-      case _ => readArray(readLength(), IntTermFormat.read(input))
-    }
-    }
-
-    override def atObject: Boolean = !atPrimitive
-
-    override def readField(name: String): BertPickleReader = {
-      this
-    }
-
-    override def endEntry(): Unit = {}
-
-    override def beginCollection(): PReader = this
-
-    override def readLength(): Int = ListTermFormat.readLength(input)
-
-    override def readElement(): PReader = this
-
-    override def endCollection(): Unit = NilTermFormat.read(input)
 
   }
 }
