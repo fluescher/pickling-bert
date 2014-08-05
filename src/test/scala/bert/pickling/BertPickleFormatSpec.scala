@@ -6,17 +6,11 @@ import org.scalatest.prop.{Checkers, PropertyChecks}
 import org.scalatest.{Matchers, WordSpec}
 
 class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with PropertyChecks {
-  "BertPickleFormat" should {
+  "BertPickleFormat for primitive types" should {
     import bert.pickling._
 
     import scala.pickling._
 
-    "unpickle a pickled list" in {
-      val pickle = List(1, 2, 3, 4).pickle
-      val result = pickle.unpickle[List[Int]]
-
-      result should be(List(1, 2, 3, 4))
-    }
     "unpickle a pickled Int" in {
       val pickle = 12.pickle
       val result = pickle.unpickle[Int]
@@ -35,6 +29,39 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result should be(12)
     }
+    "unpickle a pickled byte" in {
+      val pickle = 12.toByte.pickle
+      val result = pickle.unpickle[Byte]
+
+      result should be(12)
+    }
+    "unpickle a pickled char" in {
+      val pickle = '@'.pickle
+      val result = pickle.unpickle[Char]
+
+      result should be('@')
+    }
+    "unpickle a pickled boolean" in {
+      val pickle = true.pickle
+      val result = pickle.unpickle[Boolean]
+      result should be(true)
+
+      val pickle2 = false.pickle
+      val result2 = pickle2.unpickle[Boolean]
+      result2 should be(false)
+    }
+    "unpickle a pickled double" in {
+      val pickle = -12.3.pickle
+      val result = pickle.unpickle[Double]
+
+      result should be(-12.3)
+    }
+    "unpickle a pickled float" in {
+      val pickle = -12.3f.pickle
+      val result = pickle.unpickle[Float]
+
+      result should be(-12.3f)
+    }
     "unpickle a pickled short after an int" in {
       val pickle1 = 12.pickle
       val result1 = pickle1.unpickle[Int]
@@ -45,11 +72,17 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result2 should be(12)
     }
-    "unpickle a pickled byte" in {
-      val pickle = 12.toByte.pickle
-      val result = pickle.unpickle[Byte]
+  }
+  "BertPickleFormat for complex types" should {
+    import bert.pickling._
 
-      result should be(12)
+    import scala.pickling._
+
+    "unpickle a pickled list" in {
+      val pickle = List(1, 2, 3, 4).pickle
+      val result = pickle.unpickle[List[Int]]
+
+      result should be(List(1, 2, 3, 4))
     }
     "produce a Bert compatible pickled list" in {
       val pickle = List(1, 2, 3, 4).pickle
@@ -62,12 +95,6 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
       val result = pickle.unpickle[String]
 
       result should be("hello scala")
-    }
-    "unpickle a pickled double" in {
-      val pickle = -12.3.pickle
-      val result = pickle.unpickle[Double]
-
-      result should be(-12.3)
     }
     "unpickle null" in {
       val ref: Object = null

@@ -87,11 +87,14 @@ abstract class BertPickle extends Pickle {
           case KEY_NULL => NilTermFormat.write(output, Nil)
           case KEY_BYTE => IntTermFormat.write(output, picklee.asInstanceOf[Byte])
           case KEY_SHORT => IntTermFormat.write(output, picklee.asInstanceOf[Short])
-          case KEY_CHAR =>
+          case KEY_CHAR => IntTermFormat.write(output, picklee.asInstanceOf[Char])
           case KEY_INT => IntTermFormat.write(output, picklee.asInstanceOf[Int])
           case KEY_LONG => IntTermFormat.write(output, picklee.asInstanceOf[Long].toInt)
-          case KEY_BOOLEAN =>
-          case KEY_FLOAT =>
+          case KEY_BOOLEAN => picklee.asInstanceOf[Boolean] match { // TODO this should be mapped to true and false atoms
+            case true => SmallIntTermFormat.write(output, 1)
+            case false => SmallIntTermFormat.write(output, 0)
+          }
+          case KEY_FLOAT => DoubleTermFormat.write(output, picklee.asInstanceOf[Float])
           case KEY_DOUBLE => DoubleTermFormat.write(output, picklee.asInstanceOf[Double])
           case KEY_SCALA_STRING | KEY_JAVA_STRING => StringTermFormat.write(output, picklee.asInstanceOf[String])
           case KEY_ARRAY_BYTE =>
@@ -172,12 +175,18 @@ abstract class BertPickle extends Pickle {
     }
 
     override def readPrimitive(): Any = withHints { hints => hints.tag.key match {
-      case KEY_LONG => IntTermFormat.read(input).toLong
+      case KEY_BYTE =>  IntTermFormat.read(input).toByte
       case KEY_SHORT => IntTermFormat.read(input).toShort
-      case KEY_BYTE => IntTermFormat.read(input).toByte
+      case KEY_CHAR => IntTermFormat.read(input).toChar
       case KEY_INT => IntTermFormat.read(input)
-      case KEY_SCALA_STRING | KEY_JAVA_STRING => StringTermFormat.read(input)
+      case KEY_LONG => IntTermFormat.read(input).toLong
+      case KEY_BOOLEAN => SmallIntTermFormat.read(input) match {
+        case 0 => false
+        case _ => true
+      }
+      case KEY_FLOAT => DoubleTermFormat.read(input).toFloat
       case KEY_DOUBLE => DoubleTermFormat.read(input)
+      case KEY_SCALA_STRING | KEY_JAVA_STRING => StringTermFormat.read(input)
       case KEY_NULL => NilTermFormat.read(input)
       case _ => input.head match {
         case NilTermFormat.tag => NilTermFormat.read(input); null
