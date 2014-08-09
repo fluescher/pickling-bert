@@ -135,6 +135,25 @@ class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyC
     }
   }
 
+  "Tuple Term Format" should {
+    "start with the type tag" in {
+      val encoded = new Tuple2TermFormat(IntTermFormat, IntTermFormat).write(new ArrayOutput(),(1,2)).toArray
+
+      encoded(0) should be(104)
+    }
+    "contain the arity in the header" in {
+      val encoded = new Tuple2TermFormat(IntTermFormat, IntTermFormat).write(new ArrayOutput(),(1,2)).toArray
+
+      encoded(1) should be(2)
+    }
+    "be able to decode an Erlang tuple" in {
+      val encoded = Array(104,2,97,1,97,2).map(_.toByte)
+      val decoded = new Tuple2TermFormat(SmallIntTermFormat, SmallIntTermFormat).read(encoded)
+
+      decoded should be((1, 2))
+    }
+  }
+
   "Atom Term Format" should {
     "start with the type tag" in {
       val encoded = AtomTermFormat.write(new ArrayOutput(), 'Atom).toArray

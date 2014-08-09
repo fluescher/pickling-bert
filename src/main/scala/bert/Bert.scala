@@ -48,8 +48,8 @@ object Bert {
   private def readWithChecks[T: TermLike](term: Term): Try[T] =
     Success(term).map(implicitly[TermLike[T]].fromTermValue)
 
-  sealed trait BertException extends RuntimeException
+  sealed class BertException(message: String = "") extends RuntimeException(message)
   case class TermTooShort() extends BertException
-  case class InvalidTag(tag: Int) extends BertException
+  case class InvalidTag(tag: Int) extends BertException(tag.toString)
 
 }

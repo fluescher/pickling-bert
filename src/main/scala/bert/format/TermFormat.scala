@@ -125,6 +125,31 @@ object AtomTermFormat extends TermFormat[Symbol] {
       .put(t.name.getBytes(StandardCharsets.US_ASCII))
 }
 
+trait TupleTermFormat[T] extends TermFormat[T] {
+  override val tag = TupleTermFormat.tag
+  protected override val minimumLength = TupleTermFormat.minimumLength
+}
+object TupleTermFormat {
+  val tag = 104.toByte
+  val minimumLength = 5
+
+  def writeHeader(out: Output, arity: Int) = {
+    out.put(tag)
+    out.put(arity.toByte)
+  }
+
+}
+class Tuple2TermFormat[T1,T2](private val t1Format: TermFormat[T1],
+                              private val t2Format: TermFormat[T2]) extends TupleTermFormat[(T1,T2)] {
+
+  override def readUnchecked(in: Input): (T1, T2) = {
+    in.consume(2)
+    (t1Format.read(in), t2Format.read(in))
+  }
+
+  override def write(out: Output, t: (T1, T2)): Output = TupleTermFormat.writeHeader(out, t.productArity)
+}
+
 
 class ListTermFormat[T](private val elementFormat: TermFormat[T]) extends TermFormat[List[T]] {
   override val tag = ListTermFormat.tag
