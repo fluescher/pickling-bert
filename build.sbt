@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
 resolvers ++= Seq(
 		 Resolver.sonatypeRepo("releases"))
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.2"
 
 scalacOptions ++= Seq(
 		"-feature",
