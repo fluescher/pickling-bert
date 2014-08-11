@@ -117,6 +117,12 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result should be(blobber)
     }
+    "unpickle a binary tuple" in {
+      val pickle = ("test",2).pickle
+      val result = pickle.unpickle[(String,Int)]
+
+      result should be(("test",2))
+    }
   }
 
   "Default pickling" should {
