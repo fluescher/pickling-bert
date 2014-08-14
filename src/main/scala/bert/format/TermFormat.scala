@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import bert.Bert.{InvalidTag, TermTooShort}
-import bert.format.io.{Input, Output}
+import bert.format.io.{ArrayOutput, Input, Output}
 
 trait FormatWriter[T] {
   def write(out: Output, t: T): Output
@@ -125,11 +125,26 @@ object AtomTermFormat extends TermFormat[Symbol] {
       .put(t.name.getBytes(StandardCharsets.US_ASCII))
 }
 
-trait TupleTermFormat[T] extends TermFormat[T] {
-  override val tag = TupleTermFormat.tag
-  protected override val minimumLength = TupleTermFormat.minimumLength
+/* Terrible hack to allow dynamic sized tuples */
+object LargeTupleTermFormat {
+  val tag = 105.toByte
+
+  def writeHeader(output: Output, length: Int): Output =
+    output.put(LargeTupleTermFormat.tag)
+      .put(ByteBuffer.allocate(4).putInt(length).array())
+
+  def writeElement[T](out: Output, element: T, format: TermFormat[T]): Unit =
+    format.write(out, element)
+
+  def readLength(in: Input): Int =
+    ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
 }
-object TupleTermFormat {
+
+trait SmallTupleTermFormat[T] extends TermFormat[T] {
+  override val tag = SmallTupleTermFormat.tag
+  protected override val minimumLength = SmallTupleTermFormat.minimumLength
+}
+object SmallTupleTermFormat {
   val tag = 104.toByte
   val minimumLength = 5
 
@@ -140,14 +155,14 @@ object TupleTermFormat {
 
 }
 class Tuple2TermFormat[T1,T2](private val t1Format: TermFormat[T1],
-                              private val t2Format: TermFormat[T2]) extends TupleTermFormat[(T1,T2)] {
+                              private val t2Format: TermFormat[T2]) extends SmallTupleTermFormat[(T1,T2)] {
 
   override def readUnchecked(in: Input): (T1, T2) = {
     in.consume(2)
     (t1Format.read(in), t2Format.read(in))
   }
 
-  override def write(out: Output, t: (T1, T2)): Output = TupleTermFormat.writeHeader(out, t.productArity)
+  override def write(out: Output, t: (T1, T2)): Output = SmallTupleTermFormat.writeHeader(out, t.productArity)
 }
 
 
