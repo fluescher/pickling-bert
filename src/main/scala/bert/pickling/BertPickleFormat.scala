@@ -129,7 +129,7 @@ final class BertPickleBuilder(format: BertPickleFormat, private var parentBuilde
 
   @inline override def endEntry(): Unit = {
     ident = ident - 1
-    if(ident == 0 || (stack != Nil && stack.head._2 == ident)) {
+    if(stack != Nil && stack.head._2 == ident) {
       restoreState()
     }
   }
@@ -158,16 +158,14 @@ final class BertPickleBuilder(format: BertPickleFormat, private var parentBuilde
   }
 
   private def restoreState() = {
-    if(stack != Nil) {
-      val (cnt, _, out) = stack.head
+    val (cnt, _, out) = stack.head
 
-      LargeTupleTermFormat.writeHeader(out, fieldCount)
-      out.put(output.toArray)
+    LargeTupleTermFormat.writeHeader(out, fieldCount)
+    out.put(output.toArray)
 
-      stack = stack.tail
-      output = out
-      fieldCount = cnt
-    }
+    stack = stack.tail
+    output = out
+    fieldCount = cnt
   }
 
   private def writeArray[T](arr: Array[T], pickler: T => Unit) {
