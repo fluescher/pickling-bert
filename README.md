@@ -10,7 +10,7 @@ Implements the [Erlang External Term Format](http://erlang.org/doc/apps/erts/erl
 Usage
 -----
 
-This project's artefacts are not yet deployed to a repository. To use it you have to build it manually (using `sbt package`) and add the resulting Jar to your classpath.
+This project's artifacts are not yet deployed to a repository. To use it you have to build it manually (using `sbt package`) and add the resulting Jar to your classpath.
 
 After that you can use it in your code:
 
