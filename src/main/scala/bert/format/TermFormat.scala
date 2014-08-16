@@ -50,7 +50,7 @@ object SmallIntTermFormat extends TermFormat[Int] {
   override val tag: Byte = 97
   protected override val minimumLength = 2
   
-  override def write(out: Output, value: Int): Output = 
+  override def write(out: Output, value: Int): Output =
     out.put(tag)
        .put(ByteBuffer.allocate(4).putInt(value).array().drop(3))
        

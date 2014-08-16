@@ -93,7 +93,7 @@ final class BertPickleBuilder(format: BertPickleFormat, private var parentBuilde
     } else {
       hints.tag.key match {
         case KEY_NULL => NilTermFormat.write(output, Nil)
-        case KEY_BYTE => IntTermFormat.write(output, picklee.asInstanceOf[Byte])
+        case KEY_BYTE => SmallIntTermFormat.write(output, picklee.asInstanceOf[Byte])
         case KEY_SHORT => IntTermFormat.write(output, picklee.asInstanceOf[Short])
         case KEY_CHAR => IntTermFormat.write(output, picklee.asInstanceOf[Char])
         case KEY_INT => IntTermFormat.write(output, picklee.asInstanceOf[Int])
@@ -211,7 +211,7 @@ class BertPickleReader(input: ArrayInput, val mirror: Mirror, format: BertPickle
   }}
 
   override def readPrimitive(): Any = withHints { hints => hints.tag.key match {
-    case KEY_BYTE => IntTermFormat.read(input).toByte
+    case KEY_BYTE => SmallIntTermFormat.read(input).toByte
     case KEY_SHORT => IntTermFormat.read(input).toShort
     case KEY_CHAR => IntTermFormat.read(input).toChar
     case KEY_INT => IntTermFormat.read(input)
