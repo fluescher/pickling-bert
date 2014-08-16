@@ -50,6 +50,6 @@ object Bert {
 
   sealed class BertException(message: String = "") extends RuntimeException(message)
   case class TermTooShort() extends BertException
-  case class InvalidTag(tag: Int) extends BertException(tag.toString)
+  case class InvalidTag(tag: Int) extends BertException(s"Invalid tag: ${tag.toString}")
 
 }

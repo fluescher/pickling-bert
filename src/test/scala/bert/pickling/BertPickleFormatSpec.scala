@@ -78,17 +78,17 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
     import scala.pickling._
 
-    "unpickle a pickled list" ignore/*care about interop later */  {
+    "unpickle a pickled list of primitives" in {
       val pickle = List(1, 2, 3, 4).pickle
       val result = pickle.unpickle[List[Int]]
 
       result should be(List(1, 2, 3, 4))
     }
-    "produce a Bert compatible pickled list" ignore/*care about interop later */ {
-      val pickle = List(1, 2, 3, 4).pickle
-      val result = Bert.fromBert[List[Int]](pickle.value).get
+    "unpickle a pickled list of case classes" in {
+      val pickle = List(BlobberTest("flo", 1), BlobberTest("asdf", 2), BlobberTest("fdeds", 3)).pickle
+      val result = pickle.unpickle[List[BlobberTest]]
 
-      result should be(List(1, 2, 3, 4))
+      result should be(List(BlobberTest("flo", 1), BlobberTest("asdf", 2), BlobberTest("fdeds", 3)))
     }
     "unpickle a pickled string" in {
       val pickle = "hello scala".pickle
@@ -103,13 +103,6 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result should be(null)
     }
-    "unpickle an int array" in {
-      val arr = Array(1, 2, 3)
-      val pickle = arr.pickle
-      val result = pickle.unpickle[Array[Int]]
-
-      result should be(Array(1, 2, 3))
-    }
     "unpicke a simple case class" in {
       val blobber = BlobberTest("Blobber", 13)
       val pickle = blobber.pickle
@@ -117,11 +110,94 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result should be(blobber)
     }
-    "unpickle a binary tuple" in {
+    "unpickle a simple tuple" in {
+      val pickle = (1,"test").pickle
+      val result = pickle.unpickle[(Int,String)]
+
+      result should be((1,"test"))
+    }
+    "unpickle a complext tuple" in {
       val pickle = (1,"test",("test", 1), 2).pickle
       val result = pickle.unpickle[(Int,String,(String,Int), Int)]
 
       result should be((1,"test", ("test", 1), 2))
+    }
+  }
+
+  "BertPickleFormat for arrays" should {
+    import bert.pickling._
+
+    import scala.pickling._
+
+    "unpickle an byte array" in {
+      val arr = Array(1.toByte, 2.toByte, 3.toByte)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Byte]]
+
+      result should be(Array(1.toByte, 2.toByte, 3.toByte))
+    }
+    "unpickle an char array" in {
+      val arr = Array('a', 'b', 'c')
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Char]]
+
+      result should be(Array('a', 'b', 'c'))
+    }
+    "unpickle an short array" in {
+      val arr = Array(-45.toShort, 123.toShort, 12.toShort)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Short]]
+
+      result should be(Array(-45.toShort, 123.toShort, 12.toShort))
+    }
+    "unpickle an int array" in {
+      val arr = Array(1, 2, 3)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Int]]
+
+      result should be(Array(1, 2, 3))
+    }
+    "unpickle a long array" in {
+      val arr = Array(12L, -156L, 444L, 12L)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Long]]
+
+      result should be(Array(12L, -156L, 444L, 12L))
+    }
+    "unpickle a float array" in {
+      val arr = Array(1.2f, -15.6f, 4.44f, 1.2f)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Float]]
+
+      result should be(Array(1.2f, -15.6f, 4.44f, 1.2f))
+    }
+    "unpickle a double array" in {
+      val arr = Array(1.2, -15.6, 4.44, 1.2)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Double]]
+
+      result should be(Array(1.2, -15.6, 4.44, 1.2))
+    }
+    "unpickle a boolean array" in {
+      val arr = Array(true, false, false, true)
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[Boolean]]
+
+      result should be(Array(true, false, false, true))
+    }
+    "unpickle a array of a complex type" in {
+      val arr = Array(BlobberTest("asdf", 2), BlobberTest("blobber", -2))
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[BlobberTest]]
+
+      result should be(Array(BlobberTest("asdf", 2), BlobberTest("blobber", -2)))
+    }
+    "unpickle a array of a complex nested type" in {
+      val arr = Array((1,"test",("test", 1), 2), (1,"22",("asd", 1), 122))
+      val pickle = arr.pickle
+      val result = pickle.unpickle[Array[(Int, String, (String, Int), Int)]]
+
+      result should be(Array((1,"test",("test", 1), 2), (1,"22",("asd", 1), 122)))
     }
   }
 
