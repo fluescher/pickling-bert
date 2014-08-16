@@ -116,11 +116,18 @@ class BertPickleFormatSpec extends WordSpec with Matchers with Checkers with Pro
 
       result should be((1,"test"))
     }
-    "unpickle a complext tuple" in {
+    "unpickle a complex tuple" in {
       val pickle = (1,"test",("test", 1), 2).pickle
       val result = pickle.unpickle[(Int,String,(String,Int), Int)]
 
       result should be((1,"test", ("test", 1), 2))
+    }
+    "unpickle a tuple containing references" in {
+      val test = "test"
+      val pickle = (1,test,(test, 1), 2).pickle
+      val result = pickle.unpickle[(Int,String,(String,Int), Int)]
+
+      result should be((1,test, (test, 1), 2))
     }
   }
 

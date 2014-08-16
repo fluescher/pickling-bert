@@ -175,6 +175,36 @@ class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyC
     }
   }
 
+  "Binary Term Format" should {
+    "start with the type tag" in {
+      val encoded = BinaryTermFormat.write(new ArrayOutput(), Array(12.toByte)).toArray
+
+      encoded.length should be(6)
+      encoded(0) should be(109)
+    }
+    "store the correct length information" in {
+      val encoded = BinaryTermFormat.write(new ArrayOutput(), Array(12.toByte,-12.toByte)).toArray
+
+      encoded(1) should be(0)
+      encoded(2) should be(0)
+      encoded(3) should be(0)
+      encoded(4) should be(2)
+    }
+    "store the correct value" in {
+      val encoded = BinaryTermFormat.write(new ArrayOutput(), Array(12.toByte)).toArray
+
+      encoded(5) should be(12)
+    }
+    /* term_to_binary(term_to_binary("Hello scala")). */
+    "be able to decode a erlang byte term" in {
+      val encoded = Array(109,0,0,0,15,131,107,0,11,72,101,108,108,111,32,115,
+                          99,97,108,97).map(_.toByte)
+      val decoded = BinaryTermFormat.read(encoded)
+
+      decoded should be(Array(131,107,0,11,72,101,108,108,111,32,115,99,97,108,97).map(_.toByte))
+    }
+  }
+
   "List Term Format" should {
     val intListFormat = new ListTermFormat(IntTermFormat)
     val stringListFormat = new ListTermFormat(StringTermFormat)

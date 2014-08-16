@@ -46,6 +46,21 @@ object IntTermFormat extends TermFormat[Int] {
     
 }
 
+object BinaryTermFormat extends TermFormat[Array[Byte]] {
+  override val tag: Byte = 109
+  protected override val minimumLength = 5
+
+  override def write(out: Output, value: Array[Byte]): Output =
+    out.put(tag)
+       .put(ByteBuffer.allocate(4).putInt(value.length).array())
+       .put(value)
+
+  override def readUnchecked(in: Input): Array[Byte] = {
+    val length = ByteBuffer.wrap(in.consume(5).drop(1)).getInt()
+    in.consume(length)
+  }
+}
+
 object SmallIntTermFormat extends TermFormat[Int] {
   override val tag: Byte = 97
   protected override val minimumLength = 2
