@@ -94,19 +94,32 @@ object StringTermFormat extends TermFormat[String] with CheckedReader[String] {
   override val tag: Byte = 107
   protected override val minimumLength = 3
   
-  override def write(out: Output, value: String): Output =
-    out.put(tag)
-       .put(ByteBuffer.allocate(2).putShort(value.length().toShort).array())
-       .put(value.getBytes(StandardCharsets.US_ASCII))
+  override def write(out: Output, value: String): Output = value match {
+    case "" => NilTermFormat.write(out, Nil)
+    case s  => out.put(tag)
+                  .put(ByteBuffer.allocate(2).putShort(value.length().toShort).array())
+                  .put(value.getBytes(StandardCharsets.US_ASCII))
+  }
 
-  override def readUnchecked(in: Input): String =
-    readWithChecks(in)
+  override def read(in: Input): String = {
+    if(in.head == NilTermFormat.tag) {
+      NilTermFormat.read(in)
+      ""
+    } else {
+      if (in.head != tag) throw InvalidTag(in.head)
+      if (in.size < minimumLength) throw TermTooShort()
+
+      readWithChecks(in)
+    }
+  }
 
   private def readWithChecks(in: Input) = {
     if(3 > in.size) throw TermTooShort()
     val stringLength = ByteBuffer.wrap(in.consume(3).drop(1)).getShort()
     readValue(in, stringLength)
   }
+
+  override def readUnchecked(in: Input): String = ""
 
   private def readValue(in: Input, stringLength: Int): String =
     if(stringLength > in.size) throw TermTooShort()

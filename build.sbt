@@ -7,7 +7,8 @@ version := "0.1.0-SNAPSHOT"
 libraryDependencies ++= Seq(
 	"org.scala-lang" %% "scala-pickling" % "0.9.0-SNAPSHOT",
 	"org.scalatest"  %% "scalatest" % "2.1.5" % "test",
-	"org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
+	"org.scalacheck" %% "scalacheck" % "1.11.4" % "test",
+  "org.erlang.otp" %  "jinterface" % "1.5.6" % "test"
 	)
 
 resolvers ++= Seq(

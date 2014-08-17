@@ -79,9 +79,15 @@ class TermFormatSpec extends WordSpec with Matchers with Checkers with PropertyC
   
   "String Term Format" should {
     "start with the type tag" in {
-      val encoded = StringTermFormat.write(new ArrayOutput(), "").toArray
+      val encoded = StringTermFormat.write(new ArrayOutput(), "test").toArray
         
       encoded(0) should be(107)
+    }
+
+    "encode the emtpty string as nill" in {
+      val encoded = StringTermFormat.write(new ArrayOutput(), "").toArray
+
+      encoded(0) should be(106)
     }
 
     "be able to encode the empty string" in {

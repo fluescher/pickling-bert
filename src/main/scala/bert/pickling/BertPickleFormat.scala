@@ -91,7 +91,6 @@ final class BertPickleBuilder(format: BertPickleFormat, private var parentBuilde
     if (picklee == null) {
       NilTermFormat.write(output, Nil)
     } else {
-      println(hints.oid)
       hints.tag.key match {
         case KEY_NULL => NilTermFormat.write(output, Nil)
         case KEY_BYTE => SmallIntTermFormat.write(output, picklee.asInstanceOf[Byte])

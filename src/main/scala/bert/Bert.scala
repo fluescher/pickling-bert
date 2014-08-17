@@ -37,15 +37,17 @@ object Bert {
   }
 
   def toBert[T: TermLike](v: T): Term =
-    Array[Byte](PROTOCOL_VERSION) ++ implicitly[TermLike[T]].toTermValue(v)
+    Array[Byte](PROTOCOL_VERSION) ++ toBertTerm(v)
 
   def fromBert[T: TermLike](data: Term): Try[T] =
-    readWithChecks(data.drop(1))
+    fromBertTerm(data.drop(1))
 
-  private def toTerm[T: TermLike](v: T): Term =
+  /** Creates the ERTS representation without the header */
+  def toBertTerm[T: TermLike](v: T): Term =
     implicitly[TermLike[T]].toTermValue(v)
-    
-  private def readWithChecks[T: TermLike](term: Term): Try[T] =
+
+  /** Reads from the ERTS representation without the header */
+  def fromBertTerm[T: TermLike](term: Term): Try[T] =
     Success(term).map(implicitly[TermLike[T]].fromTermValue)
 
   sealed class BertException(message: String = "") extends RuntimeException(message)
